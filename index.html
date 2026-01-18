@@ -24,12 +24,22 @@
         /* Korrekte chemische Schreibweise */
         .formula-preview { font-family: "Times New Roman", serif; font-size: 3rem; margin: 15px 0; min-height: 4rem; color: var(--primary-dark); }
         sub { font-size: 0.55em; vertical-align: sub; line-height: 0; }
-        sup { font-size: 0.55em; vertical-align: 0.8em; line-height: 0; }
+        
+        /* Spezielle Hochstellung für Ladungen */
+        .charge {
+            display: inline-block;
+            font-size: 0.5em;
+            vertical-align: top;
+            margin-top: 0.2em;
+            margin-left: 2px;
+            font-family: sans-serif;
+            font-weight: normal;
+            color: var(--text-muted);
+        }
 
         .formula-builder { display: flex; justify-content: center; align-items: flex-start; gap: 60px; margin: 30px 0; }
         .ion-unit { display: flex; flex-direction: column; align-items: center; }
-        .ion-symbol-row { display: flex; align-items: baseline; font-family: "Times New Roman", serif; font-size: 3rem; line-height: 1; }
-        .charge-display { font-size: 1.2rem; color: var(--text-muted); margin-left: 2px; vertical-align: super; font-family: sans-serif; font-weight: normal; }
+        .ion-symbol-row { display: flex; align-items: flex-start; font-family: "Times New Roman", serif; font-size: 3rem; line-height: 1; }
 
         .index-input { width: 65px; padding: 8px; font-size: 1.2rem; text-align: center; border: 2px solid var(--primary); border-radius: 6px; margin-top: 10px; }
 
@@ -79,7 +89,7 @@
     </div>
 
     <div class="task-area">
-        <div id="task-text" style="color:var(--text-muted); margin-bottom:10px;">Bereite Aufgabe vor...</div>
+        <div id="task-text">Lade Übung...</div>
         <div id="live-formula" class="formula-preview"></div>
         <div class="formula-builder" id="formula-area"></div>
         <input type="text" id="name-input" placeholder="Name des Salzes..." autocomplete="off">
@@ -115,6 +125,7 @@
 </div>
 
 <script>
+    // --- DATEN ---
     const CATIONS = [
         { f:"Li", h:"Li", ch:1, n:"Lithium-Ion", e:1, s1:1 }, { f:"Na", h:"Na", ch:1, n:"Natrium-Ion", e:1, s1:1 }, { f:"K", h:"K", ch:1, n:"Kalium-Ion", e:1, s1:1 },
         { f:"NH4", h:"NH<sub>4</sub>", ch:1, n:"Ammonium-Ion", poly:1, e:1, s1:0 }, { f:"Ag", h:"Ag", ch:1, n:"Silber-Ion", e:1, s1:0 },
@@ -138,7 +149,9 @@
 
     let current = null, score = 0, total = 0, deck = [];
 
+    // --- MATH HELPER ---
     const getGCD = (a, b) => b ? getGCD(b, a % b) : a;
+    const getLCM = (a, b) => (a * b) / getGCD(a, b);
 
     function formatCh(val, sign) { return (val === 1 ? "" : val) + sign; }
 
@@ -162,7 +175,6 @@
         const aPool = ANIONS.filter(x => x.e && (level === 's2' || x.s1));
         
         for (let c of cPool) { for (let a of aPool) { deck.push({ cat: c, an: a }); } }
-        // Shuffle
         for (let i = deck.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -171,12 +183,15 @@
 
     function generate() {
         if (deck.length === 0) refillDeck();
-        if (deck.length === 0) { alert("Keine Ionen verfügbar!"); return; }
+        if (deck.length === 0) {
+            document.getElementById('task-text').innerText = "Keine Ionen gewählt!";
+            return;
+        }
 
         current = deck.pop();
-        const common = getGCD(current.cat.ch, current.an.ch);
-        current.reqC = current.an.ch / common;
-        current.reqA = current.cat.ch / common;
+        const l = getLCM(current.cat.ch, current.an.ch);
+        current.reqC = l / current.cat.ch;
+        current.reqA = l / current.an.ch;
 
         document.getElementById('deck-info').innerText = deck.length;
         document.getElementById('solution-box').style.display = 'none';
@@ -187,11 +202,15 @@
         
         document.getElementById('formula-area').innerHTML = `
             <div class="ion-unit">
-                <div class="ion-symbol-row">${current.cat.h}<sup>${formatCh(current.cat.ch, '+')}</sup></div>
+                <div class="ion-symbol-row">
+                    ${current.cat.h}<span class="charge">${formatCh(current.cat.ch, '+')}</span>
+                </div>
                 <input type="number" id="idx-c" class="index-input" value="1" min="1" oninput="updateLive()">
             </div>
             <div class="ion-unit">
-                <div class="ion-symbol-row">${current.an.h}<sup>${formatCh(current.an.ch, '-')}</sup></div>
+                <div class="ion-symbol-row">
+                    ${current.an.h}<span class="charge">${formatCh(current.an.ch, '-')}</span>
+                </div>
                 <input type="number" id="idx-a" class="index-input" value="1" min="1" oninput="updateLive()">
             </div>
         `;
@@ -237,6 +256,8 @@
     function initLists() {
         const cBox = document.getElementById('cat-list');
         const aBox = document.getElementById('an-list');
+        cBox.innerHTML = ''; aBox.innerHTML = '';
+        
         CATIONS.forEach((x, i) => {
             const d = document.createElement('div'); d.className = 'ion-item';
             d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="CATIONS[${i}].e = this.checked?1:0; deck=[]"> 
@@ -253,12 +274,14 @@
         });
     }
 
-    document.getElementById('next-btn').onclick = generate;
-    document.getElementById('check-btn').onclick = check;
-    document.getElementById('name-input').onkeypress = (e) => { if (e.key === 'Enter') check(); };
-
-    initLists();
-    generate();
+    // --- START ---
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('next-btn').onclick = generate;
+        document.getElementById('check-btn').onclick = check;
+        document.getElementById('name-input').onkeypress = (e) => { if (e.key === 'Enter') check(); };
+        initLists();
+        generate();
+    });
 </script>
 </body>
 </html>

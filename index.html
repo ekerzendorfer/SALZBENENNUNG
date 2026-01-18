@@ -21,16 +21,15 @@
 
         .task-area { background: white; border: 2px solid var(--primary); padding: 25px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
         
-        /* Korrekte chemische Schreibweise */
-        .formula-preview { font-family: "Times New Roman", serif; font-size: 3rem; margin: 15px 0; min-height: 4rem; color: var(--primary-dark); }
-        sub { font-size: 0.55em; vertical-align: sub; line-height: 0; }
+        /* Chemische Notation - HOCHGESTELLT FIX */
+        .formula-preview { font-family: "Times New Roman", serif; font-size: 3rem; margin: 15px 0; min-height: 4.5rem; color: var(--primary-dark); }
+        sub { font-size: 0.5em; vertical-align: sub; line-height: 0; }
         
-        /* Spezielle Hochstellung für Ladungen */
         .charge {
             display: inline-block;
-            font-size: 0.5em;
-            vertical-align: top;
-            margin-top: 0.2em;
+            font-size: 0.45em;
+            vertical-align: super;
+            line-height: 0;
             margin-left: 2px;
             font-family: sans-serif;
             font-weight: normal;
@@ -39,7 +38,7 @@
 
         .formula-builder { display: flex; justify-content: center; align-items: flex-start; gap: 60px; margin: 30px 0; }
         .ion-unit { display: flex; flex-direction: column; align-items: center; }
-        .ion-symbol-row { display: flex; align-items: flex-start; font-family: "Times New Roman", serif; font-size: 3rem; line-height: 1; }
+        .ion-symbol-row { display: flex; align-items: baseline; font-family: "Times New Roman", serif; font-size: 3.2rem; line-height: 1; }
 
         .index-input { width: 65px; padding: 8px; font-size: 1.2rem; text-align: center; border: 2px solid var(--primary); border-radius: 6px; margin-top: 10px; }
 
@@ -89,7 +88,7 @@
     </div>
 
     <div class="task-area">
-        <div id="task-text">Lade Übung...</div>
+        <div id="task-text" style="color:var(--text-muted); margin-bottom:10px;">Initialisiere...</div>
         <div id="live-formula" class="formula-preview"></div>
         <div class="formula-builder" id="formula-area"></div>
         <input type="text" id="name-input" placeholder="Name des Salzes..." autocomplete="off">
@@ -125,7 +124,6 @@
 </div>
 
 <script>
-    // --- DATEN ---
     const CATIONS = [
         { f:"Li", h:"Li", ch:1, n:"Lithium-Ion", e:1, s1:1 }, { f:"Na", h:"Na", ch:1, n:"Natrium-Ion", e:1, s1:1 }, { f:"K", h:"K", ch:1, n:"Kalium-Ion", e:1, s1:1 },
         { f:"NH4", h:"NH<sub>4</sub>", ch:1, n:"Ammonium-Ion", poly:1, e:1, s1:0 }, { f:"Ag", h:"Ag", ch:1, n:"Silber-Ion", e:1, s1:0 },
@@ -149,7 +147,6 @@
 
     let current = null, score = 0, total = 0, deck = [];
 
-    // --- MATH HELPER ---
     const getGCD = (a, b) => b ? getGCD(b, a % b) : a;
     const getLCM = (a, b) => (a * b) / getGCD(a, b);
 
@@ -173,7 +170,6 @@
         const level = document.getElementById('level-select').value;
         const cPool = CATIONS.filter(x => x.e && (level === 's2' || x.s1));
         const aPool = ANIONS.filter(x => x.e && (level === 's2' || x.s1));
-        
         for (let c of cPool) { for (let a of aPool) { deck.push({ cat: c, an: a }); } }
         for (let i = deck.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -183,11 +179,6 @@
 
     function generate() {
         if (deck.length === 0) refillDeck();
-        if (deck.length === 0) {
-            document.getElementById('task-text').innerText = "Keine Ionen gewählt!";
-            return;
-        }
-
         current = deck.pop();
         const l = getLCM(current.cat.ch, current.an.ch);
         current.reqC = l / current.cat.ch;
@@ -256,8 +247,6 @@
     function initLists() {
         const cBox = document.getElementById('cat-list');
         const aBox = document.getElementById('an-list');
-        cBox.innerHTML = ''; aBox.innerHTML = '';
-        
         CATIONS.forEach((x, i) => {
             const d = document.createElement('div'); d.className = 'ion-item';
             d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="CATIONS[${i}].e = this.checked?1:0; deck=[]"> 
@@ -274,14 +263,12 @@
         });
     }
 
-    // --- START ---
-    document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById('next-btn').onclick = generate;
-        document.getElementById('check-btn').onclick = check;
-        document.getElementById('name-input').onkeypress = (e) => { if (e.key === 'Enter') check(); };
-        initLists();
-        generate();
-    });
+    document.getElementById('next-btn').onclick = generate;
+    document.getElementById('check-btn').onclick = check;
+    document.getElementById('name-input').onkeypress = (e) => { if (e.key === 'Enter') check(); };
+
+    initLists();
+    generate();
 </script>
 </body>
 </html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formeltrainer: Ionenverbindungen</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #22c55e;
+            --error: #ef4444;
+            --bg-site: #f8fafc;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; transition: all 0.2s ease; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-site);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            padding: 24px;
+        }
+
+        header {
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { font-size: 1.4rem; margin: 0; color: var(--primary-dark); }
+
+        .stats-bar {
+            display: flex;
+            gap: 15px;
+            background: var(--bg-site);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Steuerung */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+
+        select, input, button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover { background-color: var(--primary-dark); }
+        button.secondary { background: white; color: var(--primary); border: 1px solid var(--primary); }
+        button.secondary:hover { background: #eff6ff; }
+
+        /* Aufgabenbereich */
+        .task-area {
+            background: white;
+            border: 2px solid var(--primary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #task-text { font-size: 1.1rem; margin-bottom: 15px; line-height: 1.5; }
+
+        /* Formel Editor Look */
+        .formula-builder {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 10px;
+            font-size: 2rem;
+            margin: 20px 0;
+            font-family: "Times New Roman", serif;
+        }
+
+        .ion-group { display: flex; align-items: baseline; position: relative; }
+        .charge { font-size: 1rem; vertical-align: super; color: var(--text-muted); margin-left: 2px; }
+        .index-input {
+            width: 45px;
+            font-size: 1.2rem;
+            padding: 2px;
+            text-align: center;
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            background: #fff;
+            color: var(--primary-dark);
+            margin-left: 2px;
+        }
+
+        /* Benennung */
+        .naming-area { margin: 20px 0; }
+        #name-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.1rem; text-align: center; }
+        #name-input:focus { border-color: var(--primary); outline: none; }
+
+        .feedback-area {
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        /* Lösung */
+        .solution-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* Lehrer-Bereich */
+        details.admin-section {
+            margin-top: 30px;
+            border-top: 1px dashed var(--border);
+            padding-top: 15px;
+        }
+        summary { cursor: pointer; color: var(--text-muted); font-size: 0.9rem; font-weight: bold; }
+        
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .ion-list {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #fafafa;
+            padding: 5px;
+        }
+        .ion-item {
+            padding: 5px 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 600px) {
+            .admin-grid { grid-template-columns: 1fr; }
+            .formula-builder { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>Salz-Formeltrainer</h1>
+        <div class="stats-bar">
+            <div>Richtig: <span id="score">0</span></div>
+            <div>Gesamt: <span id="total">0</span></div>
+        </div>
+    </header>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Schwierigkeitsgrad</label>
+            <select id="level-select">
+                <option value="beginner">Sek I (Einfach)</option>
+                <option value="advanced">Sek II (Fortgeschritten)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Nomenklatur</label>
+            <select id="dash-select">
+                <option value="optional">Bindestrich optional</option>
+                <option value="strict">Bindestrich streng</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>&nbsp;</label>
+            <button id="next-btn">Neue Aufgabe</button>
+        </div>
+    </div>
+
+    <div class="task-area">
+        <div id="task-text">Klicke auf "Neue Aufgabe", um zu starten.</div>
+        
+        <div class="formula-builder" id="formula-area">
+            <!-- Wird dynamisch gefüllt -->
+        </div>
+
+        <div class="naming-area">
+            <label>Name des Salzes:</label>
+            <input type="text" id="name-input" placeholder="z.B. Natriumchlorid" autocomplete="off">
+        </div>
+
+        <button id="check-btn" style="width: 100%; padding: 15px; font-size: 1.1rem;">Antwort prüfen</button>
+    </div>
+
+    <div id="feedback-area" class="feedback-area"></div>
+
+    <div id="solution-box" class="solution-box">
+        <strong>Lösung:</strong><br>
+        Formel: <span id="sol-formula"></span><br>
+        Name: <span id="sol-name"></span>
+    </div>
+
+    <!-- Lehrer-Editor -->
+    <details class="admin-section">
+        <summary>⚙️ Lehrer-Bereich: Ionen-Listen & Editor</summary>
+        <div class="admin-grid">
+            <div>
+                <label>Kationen</label>
+                <div id="cat-list" class="ion-list"></div>
+            </div>
+            <div>
+                <label>Anionen</label>
+                <div id="an-list" class="ion-list"></div>
+            </div>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:10px;">
+            <button class="secondary" onclick="exportData()">Export (JSON)</button>
+            <button class="secondary" onclick="resetData()">Listen zurücksetzen</button>
+        </div>
+    </details>
+</div>
+
+<script>
+    // --- Datenbasis ---
+    const DEFAULT_CATIONS = [
+        { f:"Na", h:"Na", ch:1, n:"Natrium-Ion" },
+        { f:"K", h:"K", ch:1, n:"Kalium-Ion" },
+        { f:"NH4", h:"NH<sub>4</sub>", ch:1, n:"Ammonium-Ion" },
+        { f:"Mg", h:"Mg", ch:2, n:"Magnesium-Ion" },
+        { f:"Ca", h:"Ca", ch:2, n:"Calcium-Ion" },
+        { f:"Al", h:"Al", ch:3, n:"Aluminium-Ion" },
+        { f:"Fe", h:"Fe", ch:2, n:"Eisen(II)-Ion", roman:"II" },
+        { f:"Fe", h:"Fe", ch:3, n:"Eisen(III)-Ion", roman:"III" },
+        { f:"Cu", h:"Cu", ch:1, n:"Kupfer(I)-Ion", roman:"I" },
+        { f:"Cu", h:"Cu", ch:2, n:"Kupfer(II)-Ion", roman:"II" }
+    ];
+
+    const DEFAULT_ANIONS = [
+        { f:"Cl", h:"Cl", ch:-1, n:"Chlorid-Ion" },
+        { f:"O", h:"O", ch:-2, n:"Oxid-Ion" },
+        { f:"S", h:"S", ch:-2, n:"Sulfid-Ion" },
+        { f:"OH", h:"OH", ch:-1, n:"Hydroxid-Ion" },
+        { f:"NO3", h:"NO<sub>3</sub>", ch:-1, n:"Nitrat-Ion" },
+        { f:"SO4", h:"SO<sub>4</sub>", ch:-2, n:"Sulfat-Ion" },
+        { f:"CO3", h:"CO<sub>3</sub>", ch:-2, n:"Carbonat-Ion" },
+        { f:"PO4", h:"PO<sub>4</sub>", ch:-3, n:"Phosphat-Ion" }
+    ];
+
+    let cations = JSON.parse(localStorage.getItem('ions_cats')) || DEFAULT_CATIONS;
+    let anions = JSON.parse(localStorage.getItem('ions_ans')) || DEFAULT_ANIONS;
+    
+    let currentTask = null;
+    let score = 0;
+    let total = 0;
+
+    // --- Helfer ---
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+    const lcm = (a, b) => (a * b) / gcd(a, b);
+
+    function updateLists() {
+        const cList = document.getElementById('cat-list');
+        const aList = document.getElementById('an-list');
+        cList.innerHTML = cations.map(i => `<div class="ion-item">${i.n} <span>${i.h}<sup>${i.ch}+</sup></span></div>`).join('');
+        aList.innerHTML = anions.map(i => `<div class="ion-item">${i.n} <span>${i.h}<sup>${Math.abs(i.ch)}-</sup></span></div>`).join('');
+    }
+
+    function generateTask() {
+        const level = document.getElementById('level-select').value;
+        let poolC = level === 'beginner' ? cations.filter(c => !c.roman) : cations;
+        let poolA = anions;
+
+        const cat = poolC[Math.floor(Math.random() * poolC.length)];
+        const an = poolA[Math.floor(Math.random() * poolA.length)];
+
+        const l = lcm(cat.ch, Math.abs(an.ch));
+        currentTask = {
+            cat, an,
+            idxC: l / cat.ch,
+            idxA: l / Math.abs(an.ch)
+        };
+
+        // UI Update
+        document.getElementById('solution-box').style.display = 'none';
+        document.getElementById('feedback-area').innerText = '';
+        document.getElementById('feedback-area').style.background = 'none';
+        document.getElementById('name-input').value = '';
+        document.getElementById('task-text').innerHTML = `Stelle das Salz aus <b>${cat.n}</b> und <b>${an.n}</b> dar:`;
+
+        const formulaArea = document.getElementById('formula-area');
+        formulaArea.innerHTML = `
+            <div class="ion-group">
+                <span>${cat.h}</span><span class="charge">${cat.ch}+</span>
+                <input type="number" id="input-idx-c" class="index-input" value="1" min="1">
+            </div>
+            <div class="ion-group">
+                <span>${an.h}</span><span class="charge">${Math.abs(an.ch)}-</span>
+                <input type="number" id="input-idx-a" class="index-input" value="1" min="1">
+            </div>
+        `;
+    }
+
+    function checkAnswer() {
+        if (!currentTask) return;
+
+        const userIdxC = parseInt(document.getElementById('input-idx-c').value);
+        const userIdxA = parseInt(document.getElementById('input-idx-a').value);
+        const userName = document.getElementById('name-input').value.trim().toLowerCase();
+
+        // Korrekten Namen bauen
+        let correctName = currentTask.cat.n.replace('-Ion', '') + currentTask.an.n.replace('-Ion', '').toLowerCase();
+        
+        // Validierung Name (Bindestrich Logik)
+        const dashMode = document.getElementById('dash-select').value;
+        let nameMatch = false;
+        if (dashMode === 'optional') {
+            nameMatch = userName.replace(/-/g, '') === correctName.replace(/-/g, '').toLowerCase();
+        } else {
+            // Hier könnte man strenger prüfen, im Schulalltag ist oft beides okay
+            nameMatch = userName === correctName.toLowerCase();
+        }
+
+        const formulaMatch = userIdxC === currentTask.idxC && userIdxA === currentTask.idxA;
+
+        total++;
+        if (nameMatch && formulaMatch) {
+            score++;
+            showFeedback("Richtig! ✨", "var(--success)");
+        } else {
+            showFeedback("Leider nicht ganz richtig.", "var(--error)");
+        }
+
+        showSolution(correctName);
+        updateStats();
+    }
+
+    function showFeedback(text, color) {
+        const fb = document.getElementById('feedback-area');
+        fb.innerText = text;
+        fb.style.background = color;
+        fb.style.color = "white";
+    }
+
+    function showSolution(name) {
+        const box = document.getElementById('solution-box');
+        const fC = currentTask.cat;
+        const fA = currentTask.an;
+
+        // Klammerlogik für die Anzeige
+        let cStr = (fC.f.length > 2 && currentTask.idxC > 1) ? `(${fC.h})` : fC.h;
+        let aStr = (fA.f.length > 2 && currentTask.idxA > 1) ? `(${fA.h})` : fA.h;
+        
+        let finalFormula = `${cStr}${currentTask.idxC > 1 ? `<sub>${currentTask.idxC}</sub>` : ''}${aStr}${currentTask.idxA > 1 ? `<sub>${currentTask.idxA}</sub>` : ''}`;
+
+        document.getElementById('sol-formula').innerHTML = finalFormula;
+        document.getElementById('sol-name').innerText = name.charAt(0).toUpperCase() + name.slice(1);
+        box.style.display = 'block';
+    }
+
+    function updateStats() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('total').innerText = total;
+    }
+
+    function resetData() {
+        if(confirm("Listen wirklich auf Standard zurücksetzen?")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    function exportData() {
+        const data = { cations, anions };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'ionen_daten.json';
+        a.click();
+    }
+
+    // Event Listener
+    document.getElementById('next-btn').onclick = generateTask;
+    document.getElementById('check-btn').onclick = checkAnswer;
+    document.getElementById('name-input').onkeypress = (e) => { if(e.key === 'Enter') checkAnswer(); };
+
+    // Start
+    updateLists();
+    generateTask();
+
+</script>
+</body>
+</html>

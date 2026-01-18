@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salz-Formeltrainer Master Pro (Final)</title>
+    <title>Salz-Formeltrainer Master Pro</title>
     <style>
         :root {
             --primary: #2563eb; --primary-dark: #1e40af; --success: #16a34a; --error: #dc2626;
@@ -11,33 +11,51 @@
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-site); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; }
         .app-container { max-width: 1000px; width: 100%; background: var(--bg-card); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border); padding: 24px; }
+        
         header { border-bottom: 2px solid var(--border); margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .stats-bar { display: flex; gap: 15px; background: var(--bg-site); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
         
-        .task-area { background: white; border: 2px solid var(--primary); padding: 25px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
-        .formula-preview { font-family: "Times New Roman", serif; font-size: 3rem; margin: 20px 0; min-height: 4.5rem; color: var(--primary-dark); display: flex; justify-content: center; align-items: baseline; gap: 2px; }
-        sub { font-size: 0.55em; vertical-align: sub; line-height: 0; }
-        sup { font-size: 0.55em; vertical-align: super; line-height: 0; }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f1f5f9; padding: 15px; border-radius: 8px; }
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
 
+        .task-area { background: white; border: 2px solid var(--primary); padding: 25px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
+        
+        /* Chemische Notation KORREKTUR */
+        .formula-preview { font-family: "Times New Roman", serif; font-size: 2.8rem; margin: 15px 0; min-height: 4rem; color: var(--primary-dark); }
+        sub { font-size: 0.55em; vertical-align: sub; line-height: 0; }
+        
         .formula-builder { display: flex; justify-content: center; align-items: flex-start; gap: 60px; margin: 30px 0; }
         .ion-unit { display: flex; flex-direction: column; align-items: center; }
-        .ion-symbol-row { display: flex; align-items: baseline; font-family: "Times New Roman", serif; font-size: 3rem; }
-        .charge-display { font-size: 1.2rem; color: var(--text-muted); margin-left: 4px; transform: translateY(-0.6em); font-family: sans-serif; }
+        .ion-symbol-row { display: flex; align-items: flex-start; font-family: "Times New Roman", serif; font-size: 3rem; line-height: 1; }
+        
+        /* Ladung HOCHGESTELLT */
+        .charge-display { 
+            font-size: 1.2rem; 
+            color: var(--text-muted); 
+            margin-left: 2px; 
+            vertical-align: super; 
+            font-family: sans-serif;
+            font-weight: normal;
+        }
 
-        input#name-input { width: 100%; max-width: 600px; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.2rem; text-align: center; outline: none; }
-        input.index-input { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border: 2px solid var(--primary); border-radius: 6px; margin-top: 10px; }
+        .index-input { width: 60px; padding: 8px; font-size: 1.2rem; text-align: center; border: 2px solid var(--primary); border-radius: 6px; margin-top: 10px; }
 
+        #name-input { width: 100%; max-width: 550px; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.2rem; text-align: center; outline: none; }
+        
         .action-bar { display: flex; gap: 10px; justify-content: flex-end; background: #f1f5f9; padding: 15px; border-radius: 8px; margin-top: 20px; }
         button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 1rem; }
         #check-btn { background: var(--primary); color: white; }
-        #next-btn { background: white; color: var(--primary); border: 2px solid var(--primary); }
+        #next-btn { background: white; color: var(--primary); border: 1px solid var(--primary); }
 
         .feedback { min-height: 40px; padding: 10px; border-radius: 8px; margin-top: 15px; font-weight: bold; text-align: center; }
-        .solution-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-top: 15px; display: none; line-height: 2; }
+        .solution-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-top: 15px; display: none; line-height: 1.8; }
         
+        /* Lehrer Bereich */
         .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
         .ion-list { height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; font-size: 0.85rem; background: #fafafa; }
-        .ion-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 2px; }
+        .ion-item { display: grid; grid-template-columns: 30px 30px 1fr; align-items: center; gap: 5px; margin-bottom: 4px; border-bottom: 1px solid #eee; }
+        .header-row { font-weight: bold; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -51,18 +69,35 @@
         </div>
     </header>
 
+    <div class="controls">
+        <div class="control-group">
+            <label>Niveau</label>
+            <select id="level-select" onchange="generate()">
+                <option value="s1">Sek I (Auswahl)</option>
+                <option value="s2" selected>Sek II (Alle Ionen)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Nomenklatur</label>
+            <select id="dash-select">
+                <option value="none">Zusammengeschrieben</option>
+                <option value="optional" selected>Bindestrich optional</option>
+            </select>
+        </div>
+    </div>
+
     <div class="task-area">
-        <div id="task-text" style="color:var(--text-muted);">Lade Ionen...</div>
+        <div id="task-text" style="color:var(--text-muted); margin-bottom:10px;">Lade Aufgabe...</div>
         <div id="live-formula" class="formula-preview"></div>
         <div class="formula-builder" id="formula-area"></div>
-        <input type="text" id="name-input" placeholder="Name des Salzes (z.B. Eisen(III)-chlorid)..." autocomplete="off">
+        <input type="text" id="name-input" placeholder="Name des Salzes..." autocomplete="off">
     </div>
 
     <div id="feedback" class="feedback"></div>
     <div id="solution-box" class="solution-box">
-        <strong>Fachlich korrekte Lösung:</strong><br>
-        Verhältnisformel: <span id="sol-formula" style="font-family:'Times New Roman', serif; font-size:2rem;"></span><br>
-        Name: <span id="sol-name" style="font-weight: bold; font-size: 1.2rem;"></span>
+        <strong>Lösung:</strong><br>
+        Formel: <span id="sol-formula" style="font-family:'Times New Roman', serif; font-size:1.8rem;"></span><br>
+        Name: <span id="sol-name" style="font-weight: bold; font-size: 1.1rem;"></span>
     </div>
 
     <div class="action-bar">
@@ -71,33 +106,43 @@
     </div>
 
     <details style="margin-top:30px; border-top:1px dashed #ccc; padding-top:15px;">
-        <summary style="cursor:pointer; color:var(--text-muted); font-weight:bold;">Lehrer-Bereich: Ionen auswählen</summary>
+        <summary style="cursor:pointer; color:var(--text-muted); font-weight:bold;">Lehrer-Bereich: Ionen & SEK I Auswahl</summary>
         <div class="admin-grid">
-            <div><label>Kationen</label><div id="cat-list" class="ion-list"></div></div>
-            <div><label>Anionen</label><div id="an-list" class="ion-list"></div></div>
+            <div>
+                <label>Kationen</label>
+                <div class="header-row"><span>An</span> <span>S1</span> <span>Name</span></div>
+                <div id="cat-list" class="ion-list"></div>
+            </div>
+            <div>
+                <label>Anionen</label>
+                <div class="header-row"><span>An</span> <span>S1</span> <span>Name</span></div>
+                <div id="an-list" class="ion-list"></div>
+            </div>
         </div>
     </details>
 </div>
 
 <script>
+    // --- DATEN ---
     const CATIONS = [
-        { f:"Li", h:"Li", ch:1, n:"Lithium-Ion", e:1 }, { f:"Na", h:"Na", ch:1, n:"Natrium-Ion", e:1 }, { f:"K", h:"K", ch:1, n:"Kalium-Ion", e:1 },
-        { f:"NH4", h:"NH<sub>4</sub>", ch:1, n:"Ammonium-Ion", poly:1, e:1 }, { f:"Ag", h:"Ag", ch:1, n:"Silber-Ion", e:1 }, { f:"Cu", h:"Cu", ch:1, n:"Kupfer(I)-Ion", r:"I", e:1 },
-        { f:"Mg", h:"Mg", ch:2, n:"Magnesium-Ion", e:1 }, { f:"Ca", h:"Ca", ch:2, n:"Calcium-Ion", e:1 }, { f:"Ba", h:"Ba", ch:2, n:"Barium-Ion", e:1 },
-        { f:"Fe", h:"Fe", ch:2, n:"Eisen(II)-Ion", r:"II", e:1 }, { f:"Cu", h:"Cu", ch:2, n:"Kupfer(II)-Ion", r:"II", e:1 }, { f:"Zn", h:"Zn", ch:2, n:"Zink-Ion", e:1 },
-        { f:"Pb", h:"Pb", ch:2, n:"Blei(II)-Ion", r:"II", e:1 }, { f:"Sn", h:"Sn", ch:2, n:"Zinn(II)-Ion", r:"II", e:1 }, { f:"Mn", h:"Mn", ch:2, n:"Mangan(II)-Ion", r:"II", e:1 },
-        { f:"Al", h:"Al", ch:3, n:"Aluminium-Ion", e:1 }, { f:"Fe", h:"Fe", ch:3, n:"Eisen(III)-Ion", r:"III", e:1 }, { f:"Cr", h:"Cr", ch:3, n:"Chrom(III)-Ion", r:"III", e:1 },
-        { f:"Pb", h:"Pb", ch:4, n:"Blei(IV)-Ion", r:"IV", e:1 }, { f:"Sn", h:"Sn", ch:4, n:"Zinn(IV)-Ion", r:"IV", e:1 }, { f:"Mn", h:"Mn", ch:4, n:"Mangan(IV)-Ion", r:"IV", e:1 },
-        { f:"V", h:"V", ch:5, n:"Vanadium(V)-Ion", r:"V", e:1 }, { f:"U", h:"U", ch:6, n:"Uran(VI)-Ion", r:"VI", e:1 }
+        { f:"Li", h:"Li", ch:1, n:"Lithium-Ion", e:1, s1:1 }, { f:"Na", h:"Na", ch:1, n:"Natrium-Ion", e:1, s1:1 }, { f:"K", h:"K", ch:1, n:"Kalium-Ion", e:1, s1:1 },
+        { f:"NH4", h:"NH<sub>4</sub>", ch:1, n:"Ammonium-Ion", poly:1, e:1, s1:0 }, { f:"Ag", h:"Ag", ch:1, n:"Silber-Ion", e:1, s1:0 },
+        { f:"Cu", h:"Cu", ch:1, n:"Kupfer(I)-Ion", r:"I", e:1, s1:0 }, { f:"Mg", h:"Mg", ch:2, n:"Magnesium-Ion", e:1, s1:1 },
+        { f:"Ca", h:"Ca", ch:2, n:"Calcium-Ion", e:1, s1:1 }, { f:"Ba", h:"Ba", ch:2, n:"Barium-Ion", e:1, s1:0 },
+        { f:"Fe", h:"Fe", ch:2, n:"Eisen(II)-Ion", r:"II", e:1, s1:1 }, { f:"Cu", h:"Cu", ch:2, n:"Kupfer(II)-Ion", r:"II", e:1, s1:1 },
+        { f:"Zn", h:"Zn", ch:2, n:"Zink-Ion", e:1, s1:0 }, { f:"Pb", h:"Pb", ch:2, n:"Blei(II)-Ion", r:"II", e:1, s1:0 },
+        { f:"Al", h:"Al", ch:3, n:"Aluminium-Ion", e:1, s1:1 }, { f:"Fe", h:"Fe", ch:3, n:"Eisen(III)-Ion", r:"III", e:1, s1:1 },
+        { f:"Cr", h:"Cr", ch:3, n:"Chrom(III)-Ion", r:"III", e:1, s1:0 }, { f:"Pb", h:"Pb", ch:4, n:"Blei(IV)-Ion", r:"IV", e:1, s1:0 },
+        { f:"Sn", h:"Sn", ch:4, n:"Zinn(IV)-Ion", r:"IV", e:1, s1:0 }, { f:"U", h:"U", ch:6, n:"Uran(VI)-Ion", r:"VI", e:1, s1:0 }
     ];
 
     const ANIONS = [
-        { f:"F", h:"F", ch:1, n:"Fluorid-Ion", e:1 }, { f:"Cl", h:"Cl", ch:1, n:"Chlorid-Ion", e:1 }, { f:"Br", h:"Br", ch:1, n:"Bromid-Ion", e:1 }, { f:"I", h:"I", ch:1, n:"Iodid-Ion", e:1 },
-        { f:"OH", h:"OH", ch:1, n:"Hydroxid-Ion", poly:1, e:1 }, { f:"NO3", h:"NO<sub>3</sub>", ch:1, n:"Nitrat-Ion", poly:1, e:1 },
-        { f:"MnO4", h:"MnO<sub>4</sub>", ch:1, n:"Permanganat-Ion", poly:1, e:1 }, { f:"O", h:"O", ch:2, n:"Oxid-Ion", e:1 }, { f:"S", h:"S", ch:2, n:"Sulfid-Ion", e:1 },
-        { f:"SO4", h:"SO<sub>4</sub>", ch:2, n:"Sulfat-Ion", poly:1, e:1 }, { f:"CO3", h:"CO<sub>3</sub>", ch:2, n:"Carbonat-Ion", poly:1, e:1 },
-        { f:"CrO4", h:"CrO<sub>4</sub>", ch:2, n:"Chromat-Ion", poly:1, e:1 }, { f:"Cr2O7", h:"Cr<sub>2</sub>O<sub>7</sub>", ch:2, n:"Dichromat-Ion", poly:1, e:1 },
-        { f:"PO4", h:"PO<sub>4</sub>", ch:3, n:"Phosphat-Ion", poly:1, e:1 }, { f:"N", h:"N", ch:3, n:"Nitrid-Ion", e:1 }
+        { f:"F", h:"F", ch:1, n:"Fluorid-Ion", e:1, s1:1 }, { f:"Cl", h:"Cl", ch:1, n:"Chlorid-Ion", e:1, s1:1 }, { f:"Br", h:"Br", ch:1, n:"Bromid-Ion", e:1, s1:1 },
+        { f:"I", h:"I", ch:1, n:"Iodid-Ion", e:1, s1:1 }, { f:"OH", h:"OH", ch:1, n:"Hydroxid-Ion", poly:1, e:1, s1:1 },
+        { f:"NO3", h:"NO<sub>3</sub>", ch:1, n:"Nitrat-Ion", poly:1, e:1, s1:1 }, { f:"O", h:"O", ch:2, n:"Oxid-Ion", e:1, s1:1 },
+        { f:"S", h:"S", ch:2, n:"Sulfid-Ion", e:1, s1:1 }, { f:"SO4", h:"SO<sub>4</sub>", ch:2, n:"Sulfat-Ion", poly:1, e:1, s1:1 },
+        { f:"CO3", h:"CO<sub>3</sub>", ch:2, n:"Carbonat-Ion", poly:1, e:1, s1:1 }, { f:"PO4", h:"PO<sub>4</sub>", ch:3, n:"Phosphat-Ion", poly:1, e:1, s1:0 },
+        { f:"Cr2O7", h:"Cr<sub>2</sub>O<sub>7</sub>", ch:2, n:"Dichromat-Ion", poly:1, e:1, s1:0 }
     ];
 
     let current = null, score = 0, total = 0;
@@ -122,18 +167,20 @@
     }
 
     function generate() {
-        const cPool = CATIONS.filter(x => x.e);
-        const aPool = ANIONS.filter(x => x.e);
+        const level = document.getElementById('level-select').value;
+        const cPool = CATIONS.filter(x => x.e && (level === 's2' || x.s1));
+        const aPool = ANIONS.filter(x => x.e && (level === 's2' || x.s1));
+        
+        if(cPool.length === 0 || aPool.length === 0) {
+            document.getElementById('task-text').innerText = "Keine Ionen gewählt!";
+            return;
+        }
+
         const cat = cPool[Math.floor(Math.random() * cPool.length)];
         const an = aPool[Math.floor(Math.random() * aPool.length)];
 
-        // Mathematische Berechnung der Indices (Gekürztes Verhältnis)
         const common = getGCD(cat.ch, an.ch);
-        current = { 
-            cat, an, 
-            reqC: an.ch / common, 
-            reqA: cat.ch / common 
-        };
+        current = { cat, an, reqC: an.ch / common, reqA: cat.ch / common };
 
         document.getElementById('solution-box').style.display = 'none';
         document.getElementById('feedback').innerText = '';
@@ -188,28 +235,5 @@
         document.getElementById('total').innerText = total;
     }
 
-    // Lehrer-Listen
     function initLists() {
-        const cBox = document.getElementById('cat-list');
-        const aBox = document.getElementById('an-list');
-        CATIONS.forEach((x, i) => {
-            const d = document.createElement('div'); d.className = 'ion-item';
-            d.innerHTML = `<input type="checkbox" checked onchange="CATIONS[${i}].e = this.checked"> ${x.n}`;
-            cBox.appendChild(d);
-        });
-        ANIONS.forEach((x, i) => {
-            const d = document.createElement('div'); d.className = 'ion-item';
-            d.innerHTML = `<input type="checkbox" checked onchange="ANIONS[${i}].e = this.checked"> ${x.n}`;
-            aBox.appendChild(d);
-        });
-    }
-
-    document.getElementById('next-btn').onclick = generate;
-    document.getElementById('check-btn').onclick = check;
-    document.getElementById('name-input').onkeypress = (e) => { if (e.key === 'Enter') check(); };
-
-    initLists();
-    generate();
-</script>
-</body>
-</html>
+        const cBox = d

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salz-Formeltrainer Master Pro</title>
+    <title>Salz-Formeltrainer Professional</title>
     <style>
         :root {
             --primary: #2563eb; --primary-dark: #1e40af; --success: #16a34a; --error: #dc2626;
@@ -22,18 +22,33 @@
         .control-group { display: flex; flex-direction: column; gap: 5px; }
         label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
 
-        .task-area { background: white; border: 2px solid var(--primary); padding: 25px; border-radius: 8px; margin-bottom: 20px; text-align: center; position: relative; }
-        #task-text { font-size: 1.15rem; margin-bottom: 20px; line-height: 1.5; }
+        .task-area { background: white; border: 2px solid var(--primary); padding: 25px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        #task-text { font-size: 1.2rem; margin-bottom: 20px; line-height: 1.5; }
 
-        /* Formel-Darstellung */
-        .formula-builder { display: flex; justify-content: center; align-items: center; gap: 40px; margin: 30px 0; }
-        .ion-group { display: inline-block; position: relative; font-family: "Times New Roman", serif; font-size: 2.5rem; }
-        .charge-sup { position: absolute; top: -0.5rem; left: 100%; font-size: 1.2rem; font-weight: normal; white-space: nowrap; color: var(--text-muted); }
-        .index-sub-input { display: block; margin-top: 5px; width: 50px; padding: 4px; font-size: 1.2rem; text-align: center; border: 2px solid var(--primary); border-radius: 6px; font-family: sans-serif; }
+        /* Fachlich korrekte Formel-Darstellung */
+        .formula-builder { display: flex; justify-content: center; align-items: center; gap: 50px; margin: 40px 0; }
+        .ion-display { display: inline-flex; align-items: flex-start; position: relative; font-family: "Times New Roman", serif; font-size: 3rem; line-height: 1; }
+        
+        /* Ladung deutlich hochgestellt */
+        .charge-sup { 
+            font-size: 1.2rem; 
+            margin-left: 2px; 
+            transform: translateY(-0.6em); 
+            font-weight: normal; 
+            color: var(--text-muted); 
+            font-family: sans-serif;
+        }
 
-        /* Nomenklatur */
-        .naming-area { margin: 20px 0; text-align: center; }
-        #name-input { width: 100%; max-width: 500px; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.2rem; text-align: center; outline: none; }
+        /* Index-Eingabe tiefgestellt */
+        .index-input-wrapper { display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
+        .index-sub-input { 
+            width: 50px; padding: 5px; font-size: 1.2rem; text-align: center; 
+            border: 2px solid var(--primary); border-radius: 6px; 
+            background: #fff; font-family: sans-serif;
+        }
+
+        .naming-area { margin: 25px 0; text-align: center; }
+        #name-input { width: 100%; max-width: 550px; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.2rem; text-align: center; outline: none; }
         #name-input:focus { border-color: var(--primary); }
 
         .action-bar { display: flex; gap: 15px; justify-content: flex-end; margin-top: 20px; background: #f1f5f9; padding: 15px; border-radius: 8px; }
@@ -42,13 +57,15 @@
         #next-btn { background: white; color: var(--primary); border: 2px solid var(--primary); }
 
         .feedback { min-height: 40px; padding: 10px; border-radius: 8px; margin-top: 15px; font-weight: bold; text-align: center; }
-        .solution-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; line-height: 1.6; }
-        .inline-formula { font-family: "Times New Roman", serif; font-size: 1.3rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; }
+        .solution-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
+        .inline-formula { font-family: "Times New Roman", serif; font-size: 1.4rem; padding: 0 4px; }
+        sub { font-size: 0.6em; }
 
         details.admin-section { margin-top: 30px; border-top: 1px dashed var(--border); padding-top: 15px; }
         summary { cursor: pointer; color: var(--text-muted); font-size: 0.9rem; font-weight: bold; }
         .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
-        .ion-list { height: 150px; overflow-y: auto; border: 1px solid var(--border); font-size: 0.8rem; padding: 5px; background: #fafafa; }
+        .ion-list { height: 250px; overflow-y: auto; border: 1px solid var(--border); font-size: 0.8rem; padding: 10px; background: #fafafa; border-radius: 6px; }
+        .ion-list div { padding: 3px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
@@ -68,7 +85,7 @@
             <label>Niveau</label>
             <select id="level-select">
                 <option value="beginner">Sek I (Hauptgruppen & Basics)</option>
-                <option value="advanced">Sek II (Vollständige Liste & Stock-Namen)</option>
+                <option value="advanced" selected>Sek II (Vollständige Profi-Liste)</option>
             </select>
         </div>
         <div class="control-group">
@@ -84,12 +101,12 @@
         <div id="task-text">Lade Aufgabenstapel...</div>
         
         <div class="formula-builder" id="formula-area">
-            <!-- Dynamisch -->
+            <!-- Dynamische Ionenanzeige -->
         </div>
 
         <div class="naming-area">
-            <label style="display:block; margin-bottom:8px; font-weight:600;">Name des Salzes:</label>
-            <input type="text" id="name-input" placeholder="z.B. Eisen(III)-chlorid" autocomplete="off">
+            <label style="display:block; margin-bottom:8px; font-weight:600;">Systematischer Name des Salzes:</label>
+            <input type="text" id="name-input" placeholder="z.B. Aluminiumhydroxid oder Eisen(III)-chlorid" autocomplete="off">
         </div>
     </div>
 
@@ -98,7 +115,7 @@
     <div id="solution-box" class="solution-box">
         <strong>Lösung:</strong><br>
         Verhältnisformel: <span id="sol-formula" class="inline-formula"></span><br>
-        Systematischer Name: <span id="sol-name" class="inline-formula"></span>
+        Name: <span id="sol-name" class="inline-formula" style="font-family: sans-serif;"></span>
     </div>
 
     <div class="action-bar">
@@ -107,71 +124,56 @@
     </div>
 
     <details class="admin-section">
-        <summary>⚙️ Ionen-Bibliothek einsehen</summary>
+        <summary>⚙️ Vollständige Ionen-Bibliothek einsehen</summary>
         <div class="admin-grid">
-            <div><label>Kationen</label><div id="cat-list" class="ion-list"></div></div>
-            <div><label>Anionen</label><div id="an-list" class="ion-list"></div></div>
+            <div><label>Kationen (38)</label><div id="cat-list" class="ion-list"></div></div>
+            <div><label>Anionen (25)</label><div id="an-list" class="ion-list"></div></div>
         </div>
     </details>
 </div>
 
 <script>
-    // --- Umfangreiche Ionen-Bibliothek ---
+    // --- VOLLSTÄNDIGE IONEN-DATENBANK ---
     const CATIONS = [
-        { f:"Li", h:"Li", ch:1, n:"Lithium-Ion" },
-        { f:"Na", h:"Na", ch:1, n:"Natrium-Ion" },
-        { f:"K", h:"K", ch:1, n:"Kalium-Ion" },
-        { f:"NH4", h:"NH<sub>4</sub>", ch:1, n:"Ammonium-Ion", poly:true },
-        { f:"Ag", h:"Ag", ch:1, n:"Silber-Ion" },
-        { f:"Cu", h:"Cu", ch:1, n:"Kupfer(I)-Ion", roman:"I" },
-        { f:"Mg", h:"Mg", ch:2, n:"Magnesium-Ion" },
-        { f:"Ca", h:"Ca", ch:2, n:"Calcium-Ion" },
-        { f:"Ba", h:"Ba", ch:2, n:"Barium-Ion" },
-        { f:"Fe", h:"Fe", ch:2, n:"Eisen(II)-Ion", roman:"II" },
-        { f:"Cu", h:"Cu", ch:2, n:"Kupfer(II)-Ion", roman:"II" },
-        { f:"Zn", h:"Zn", ch:2, n:"Zink-Ion" },
-        { f:"Sn", h:"Sn", ch:2, n:"Zinn(II)-Ion", roman:"II" },
-        { f:"Pb", h:"Pb", ch:2, n:"Blei(II)-Ion", roman:"II" },
-        { f:"Al", h:"Al", ch:3, n:"Aluminium-Ion" },
-        { f:"Fe", h:"Fe", ch:3, n:"Eisen(III)-Ion", roman:"III" },
-        { f:"Cr", h:"Cr", ch:3, n:"Chrom(III)-Ion", roman:"III" },
-        { f:"Sn", h:"Sn", ch:4, n:"Zinn(IV)-Ion", roman:"IV" },
-        { f:"Pb", h:"Pb", ch:4, n:"Blei(IV)-Ion", roman:"IV" },
-        { f:"Mn", h:"Mn", ch:4, n:"Mangan(IV)-Ion", roman:"IV" },
-        { f:"Ti", h:"Ti", ch:4, n:"Titan(IV)-Ion", roman:"IV" },
-        { f:"V", h:"V", ch:5, n:"Vanadium(V)-Ion", roman:"V" },
+        { f:"Li", h:"Li", ch:1, n:"Lithium-Ion" }, { f:"Na", h:"Na", ch:1, n:"Natrium-Ion" }, { f:"K", h:"K", ch:1, n:"Kalium-Ion" },
+        { f:"NH4", h:"NH<sub>4</sub>", ch:1, n:"Ammonium-Ion", poly:true }, { f:"Ag", h:"Ag", ch:1, n:"Silber-Ion" },
+        { f:"Cu", h:"Cu", ch:1, n:"Kupfer(I)-Ion", roman:"I" }, { f:"Hg", h:"Hg", ch:1, n:"Quecksilber(I)-Ion", roman:"I" },
+        { f:"Mg", h:"Mg", ch:2, n:"Magnesium-Ion" }, { f:"Ca", h:"Ca", ch:2, n:"Calcium-Ion" }, { f:"Fe", h:"Fe", ch:2, n:"Eisen(II)-Ion", roman:"II" },
+        { f:"Mn", h:"Mn", ch:2, n:"Mangan(II)-Ion", roman:"II" }, { f:"Sn", h:"Sn", ch:2, n:"Zinn(II)-Ion", roman:"II" },
+        { f:"Cu", h:"Cu", ch:2, n:"Kupfer(II)-Ion", roman:"II" }, { f:"Hg", h:"Hg", ch:2, n:"Quecksilber(II)-Ion", roman:"II" },
+        { f:"Pb", h:"Pb", ch:2, n:"Blei(II)-Ion", roman:"II" }, { f:"Ni", h:"Ni", ch:2, n:"Nickel(II)-Ion", roman:"II" },
+        { f:"Zn", h:"Zn", ch:2, n:"Zink-Ion" }, { f:"Co", h:"Co", ch:2, n:"Cobalt(II)-Ion", roman:"II" }, { f:"Ba", h:"Ba", ch:2, n:"Barium-Ion" },
+        { f:"Al", h:"Al", ch:3, n:"Aluminium-Ion" }, { f:"Cr", h:"Cr", ch:3, n:"Chrom(III)-Ion", roman:"III" }, { f:"Fe", h:"Fe", ch:3, n:"Eisen(III)-Ion", roman:"III" },
+        { f:"Ga", h:"Ga", ch:3, n:"Gallium-Ion" }, { f:"Bi", h:"Bi", ch:3, n:"Bismut-Ion" }, { f:"Au", h:"Au", ch:3, n:"Gold(III)-Ion", roman:"III" },
+        { f:"Sb", h:"Sb", ch:3, n:"Antimon(III)-Ion", roman:"III" }, { f:"Ce", h:"Ce", ch:3, n:"Cer(III)-Ion", roman:"III" },
+        { f:"Ti", h:"Ti", ch:4, n:"Titan(IV)-Ion", roman:"IV" }, { f:"Zr", h:"Zr", ch:4, n:"Zirkonium(IV)-Ion", roman:"IV" },
+        { f:"Ge", h:"Ge", ch:4, n:"Germanium(IV)-Ion", roman:"IV" }, { f:"Mn", h:"Mn", ch:4, n:"Mangan(IV)-Ion", roman:"IV" },
+        { f:"Sn", h:"Sn", ch:4, n:"Zinn(IV)-Ion", roman:"IV" }, { f:"Pt", h:"Pt", ch:4, n:"Platin(IV)-Ion", roman:"IV" },
+        { f:"Pb", h:"Pb", ch:4, n:"Blei(IV)-Ion", roman:"IV" }, { f:"V", h:"V", ch:5, n:"Vanadium(V)-Ion", roman:"V" },
+        { f:"Ta", h:"Ta", ch:5, n:"Tantal(V)-Ion", roman:"V" }, { f:"Cr", h:"Cr", ch:6, n:"Chrom(VI)-Ion", roman:"VI" },
+        { f:"W", h:"W", ch:6, n:"Wolfram(VI)-Ion", roman:"VI" }, { f:"Mo", h:"Mo", ch:6, n:"Molybdän(VI)-Ion", roman:"VI" },
         { f:"U", h:"U", ch:6, n:"Uran(VI)-Ion", roman:"VI" }
     ];
 
     const ANIONS = [
-        { f:"F", h:"F", ch:-1, n:"Fluorid-Ion" },
-        { f:"Cl", h:"Cl", ch:-1, n:"Chlorid-Ion" },
-        { f:"Br", h:"Br", ch:-1, n:"Bromid-Ion" },
-        { f:"I", h:"I", ch:-1, n:"Iodid-Ion" },
-        { f:"OH", h:"OH", ch:-1, n:"Hydroxid-Ion", poly:true },
-        { f:"NO3", h:"NO<sub>3</sub>", ch:-1, n:"Nitrat-Ion", poly:true },
-        { f:"NO2", h:"NO<sub>2</sub>", ch:-1, n:"Nitrit-Ion", poly:true },
-        { f:"MnO4", h:"MnO<sub>4</sub>", ch:-1, n:"Permanganat-Ion", poly:true },
-        { f:"CH3COO", h:"CH<sub>3</sub>COO", ch:-1, n:"Acetat-Ion", poly:true },
-        { f:"O", h:"O", ch:-2, n:"Oxid-Ion" },
-        { f:"S", h:"S", ch:-2, n:"Sulfid-Ion" },
-        { f:"SO4", h:"SO<sub>4</sub>", ch:-2, n:"Sulfat-Ion", poly:true },
-        { f:"SO3", h:"SO<sub>3</sub>", ch:-2, n:"Sulfit-Ion", poly:true },
-        { f:"CO3", h:"CO<sub>3</sub>", ch:-2, n:"Carbonat-Ion", poly:true },
-        { f:"CrO4", h:"CrO<sub>4</sub>", ch:-2, n:"Chromat-Ion", poly:true },
-        { f:"Cr2O7", h:"Cr<sub>2</sub>O<sub>7</sub>", ch:-2, n:"Dichromat-Ion", poly:true },
-        { f:"PO4", h:"PO<sub>4</sub>", ch:-3, n:"Phosphat-Ion", poly:true },
-        { f:"N", h:"N", ch:-3, n:"Nitrid-Ion" }
+        { f:"F", h:"F", ch:-1, n:"Fluorid-Ion" }, { f:"Cl", h:"Cl", ch:-1, n:"Chlorid-Ion" }, { f:"Br", h:"Br", ch:-1, n:"Bromid-Ion" }, { f:"I", h:"I", ch:-1, n:"Iodid-Ion" },
+        { f:"OH", h:"OH", ch:-1, n:"Hydroxid-Ion", poly:true }, { f:"NO3", h:"NO<sub>3</sub>", ch:-1, n:"Nitrat-Ion", poly:true },
+        { f:"NO2", h:"NO<sub>2</sub>", ch:-1, n:"Nitrit-Ion", poly:true }, { f:"HSO3", h:"HSO<sub>3</sub>", ch:-1, n:"Hydrogensulfit-Ion", poly:true },
+        { f:"HSO4", h:"HSO<sub>4</sub>", ch:-1, n:"Hydrogensulfat-Ion", poly:true }, { f:"HCO3", h:"HCO<sub>3</sub>", ch:-1, n:"Hydrogencarbonat-Ion", poly:true },
+        { f:"H2PO4", h:"H<sub>2</sub>PO<sub>4</sub>", ch:-1, n:"Dihydrogenphosphat-Ion", poly:true }, { f:"CH3COO", h:"CH<sub>3</sub>COO", ch:-1, n:"Acetat-Ion", poly:true },
+        { f:"MnO4", h:"MnO<sub>4</sub>", ch:-1, n:"Permanganat-Ion", poly:true }, { f:"O", h:"O", ch:-2, n:"Oxid-Ion" }, { f:"S", h:"S", ch:-2, n:"Sulfid-Ion" },
+        { f:"SO3", h:"SO<sub>3</sub>", ch:-2, n:"Sulfit-Ion", poly:true }, { f:"SO4", h:"SO<sub>4</sub>", ch:-2, n:"Sulfat-Ion", poly:true },
+        { f:"CO3", h:"CO<sub>3</sub>", ch:-2, n:"Carbonat-Ion", poly:true }, { f:"S2O3", h:"S<sub>2</sub>O<sub>3</sub>", ch:-2, n:"Thiosulfat-Ion", poly:true },
+        { f:"C2O4", h:"C<sub>2</sub>O<sub>4</sub>", ch:-2, n:"Oxalat-Ion", poly:true }, { f:"HPO4", h:"HPO<sub>4</sub>", ch:-2, n:"Hydrogenphosphat-Ion", poly:true },
+        { f:"CrO4", h:"CrO<sub>4</sub>", ch:-2, n:"Chromat-Ion", poly:true }, { f:"Cr2O7", h:"Cr<sub>2</sub>O<sub>7</sub>", ch:-2, n:"Dichromat-Ion", poly:true },
+        { f:"N", h:"N", ch:-3, n:"Nitrid-Ion" }, { f:"P", h:"P", ch:-3, n:"Phosphid-Ion" }, { f:"PO4", h:"PO<sub>4</sub>", ch:-3, n:"Phosphat-Ion", poly:true }
     ];
 
-    const BEGINNER_CATIONS = ["Na", "K", "Mg", "Ca", "Al", "NH4"];
+    const BEGINNER_CATIONS = ["Na", "K", "Mg", "Ca", "Al", "NH4", "Ag"];
     const BEGINNER_ANIONS = ["Cl", "O", "S", "OH", "NO3", "SO4", "CO3"];
 
-    let taskDeck = [];
-    let currentTask = null;
-    let score = 0; let total = 0;
+    let taskDeck = [], currentTask = null, score = 0, total = 0;
 
-    // --- Logik ---
     const gcd = (a, b) => b ? gcd(b, a % b) : a;
     const lcm = (a, b) => (a * b) / gcd(a, b);
 
@@ -180,50 +182,31 @@
         const level = document.getElementById('level-select').value;
         const cPool = level === 'beginner' ? CATIONS.filter(c => BEGINNER_CATIONS.includes(c.f)) : CATIONS;
         const aPool = level === 'beginner' ? ANIONS.filter(a => BEGINNER_ANIONS.includes(a.f)) : ANIONS;
-
-        for (let c of cPool) {
-            for (let a of aPool) {
-                taskDeck.push({ cat: c, an: a });
-            }
-        }
-        // Shuffle
-        for (let i = taskDeck.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [taskDeck[i], taskDeck[j]] = [taskDeck[j], taskDeck[i]];
-        }
+        for (let c of cPool) { for (let a of aPool) { taskDeck.push({ cat: c, an: a }); } }
+        for (let i = taskDeck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [taskDeck[i], taskDeck[j]] = [taskDeck[j], taskDeck[i]]; }
         document.getElementById('deck-count').innerText = taskDeck.length;
     }
 
     function generateTask() {
         if (taskDeck.length === 0) refreshTaskDeck();
         const task = taskDeck.pop();
-        const cCharge = task.cat.ch;
-        const aCharge = Math.abs(task.an.ch);
-        const l = lcm(cCharge, aCharge);
+        const cCh = task.cat.ch; const aCh = Math.abs(task.an.ch); const l = lcm(cCh, aCh);
+        currentTask = { ...task, reqC: l/cCh, reqA: l/aCh };
 
-        currentTask = {
-            ...task,
-            reqIdxC: l / cCharge,
-            reqIdxA: l / aCharge
-        };
-
-        // UI Reset
         document.getElementById('solution-box').style.display = 'none';
         document.getElementById('feedback').innerText = '';
         document.getElementById('feedback').style.background = 'none';
         document.getElementById('name-input').value = '';
         document.getElementById('deck-count').innerText = taskDeck.length;
+        document.getElementById('task-text').innerHTML = `Erstelle das Salz aus: <br><b>${currentTask.cat.n}</b> und <b>${currentTask.an.n}</b>`;
 
-        document.getElementById('task-text').innerHTML = `Erstelle die Verbindung aus: <br><b>${currentTask.cat.n}</b> und <b>${currentTask.an.n}</b>`;
-
-        const area = document.getElementById('formula-area');
-        area.innerHTML = `
-            <div class="ion-group">
-                ${currentTask.cat.h}<span class="charge-sup">${cCharge}+</span>
+        document.getElementById('formula-area').innerHTML = `
+            <div class="index-input-wrapper">
+                <div class="ion-display">${currentTask.cat.h}<span class="charge-sup">${cCh}+</span></div>
                 <input type="number" id="idx-c" class="index-sub-input" value="1" min="1">
             </div>
-            <div class="ion-group">
-                ${currentTask.an.h}<span class="charge-sup">${aCharge}-</span>
+            <div class="index-input-wrapper">
+                <div class="ion-display">${currentTask.an.h}<span class="charge-sup">${aCh}-</span></div>
                 <input type="number" id="idx-a" class="index-sub-input" value="1" min="1">
             </div>
         `;
@@ -232,75 +215,51 @@
 
     function check() {
         if (!currentTask) return;
-        const uIdxC = parseInt(document.getElementById('idx-c').value);
-        const uIdxA = parseInt(document.getElementById('idx-a').value);
+        const uC = parseInt(document.getElementById('idx-c').value), uA = parseInt(document.getElementById('idx-a').value);
         const uName = document.getElementById('name-input').value.trim().toLowerCase();
+        const level = document.getElementById('level-select').value, dash = document.getElementById('dash-select').value;
 
-        const level = document.getElementById('level-select').value;
-        const dashMode = document.getElementById('dash-select').value;
-
-        // Namen validieren
         let stemC = currentTask.cat.n.replace('-Ion', '');
         if (level === 'beginner') stemC = stemC.replace(/\([IVX]+\)/, '');
         const stemA = currentTask.an.n.replace('-Ion', '').toLowerCase();
         
-        const correctName = (stemC + (dashMode === 'strict' ? '-' : '') + stemA).toLowerCase();
-        const nameMatch = dashMode === 'strict' ? uName === correctName : uName.replace(/-/g, '') === correctName.replace(/-/g, '');
-        const formulaMatch = uIdxC === currentTask.reqIdxC && uIdxA === currentTask.reqIdxA;
+        const correctName = (stemC + (dash === 'strict' ? '-' : '') + stemA).toLowerCase();
+        const nameMatch = dash === 'strict' ? uName === correctName : uName.replace(/-/g, '') === correctName.replace(/-/g, '');
+        const formulaMatch = uC === currentTask.reqC && uA === currentTask.reqA;
 
         total++;
-        if (nameMatch && formulaMatch) {
-            score++;
-            showFeedback("Richtig! ✨", "var(--success)");
-        } else {
-            showFeedback("Leider falsch.", "var(--error)");
-        }
-
+        if (nameMatch && formulaMatch) { score++; showFB("Richtig! ✨", "var(--success)"); } 
+        else { showFB("Leider falsch.", "var(--error)"); }
         renderSolution(stemC + "-" + stemA);
-        updateStats();
-    }
-
-    function renderSolution(name) {
-        const box = document.getElementById('solution-box');
-        const c = currentTask.cat;
-        const a = currentTask.an;
-        
-        // Formelbau mit Klammerlogik
-        const cPart = (c.poly && currentTask.reqIdxC > 1) ? `(${c.h})` : c.h;
-        const aPart = (a.poly && currentTask.reqIdxA > 1) ? `(${a.h})` : a.h;
-        const cIdx = currentTask.reqIdxC > 1 ? `<sub>${currentTask.reqIdxC}</sub>` : '';
-        const aIdx = currentTask.reqIdxA > 1 ? `<sub>${currentTask.reqIdxA}</sub>` : '';
-
-        document.getElementById('sol-formula').innerHTML = `${cPart}${cIdx}${aPart}${aIdx}`;
-        document.getElementById('sol-name').innerText = name.charAt(0).toUpperCase() + name.slice(1);
-        box.style.display = 'block';
-    }
-
-    function showFeedback(text, color) {
-        const f = document.getElementById('feedback');
-        f.innerText = text;
-        f.style.background = color;
-        f.style.color = "white";
-    }
-
-    function updateStats() {
         document.getElementById('score').innerText = score;
         document.getElementById('total').innerText = total;
     }
 
-    // --- Init ---
+    function renderSolution(name) {
+        const c = currentTask.cat; const a = currentTask.an;
+        // KLAMMERLOGIK: Wenn mehratomig UND Index > 1 -> Klammern
+        const cPart = (c.poly && currentTask.reqC > 1) ? `(${c.h})` : c.h;
+        const aPart = (a.poly && currentTask.reqA > 1) ? `(${a.h})` : a.h;
+        const cIdx = currentTask.reqC > 1 ? `<sub>${currentTask.reqC}</sub>` : '';
+        const aIdx = currentTask.reqA > 1 ? `<sub>${currentTask.reqA}</sub>` : '';
+        document.getElementById('sol-formula').innerHTML = `${cPart}${cIdx}${aPart}${aIdx}`;
+        document.getElementById('sol-name').innerText = name.charAt(0).toUpperCase() + name.slice(1);
+        document.getElementById('solution-box').style.display = 'block';
+    }
+
+    function showFB(t, c) { const f = document.getElementById('feedback'); f.innerText = t; f.style.background = c; f.style.color = "white"; }
+
     document.getElementById('next-btn').onclick = generateTask;
     document.getElementById('check-btn').onclick = check;
     document.getElementById('level-select').onchange = () => { refreshTaskDeck(); generateTask(); };
     document.getElementById('name-input').onkeypress = (e) => { if (e.key === 'Enter') check(); };
 
-    // Listen für Admin-View
-    document.getElementById('cat-list').innerHTML = CATIONS.map(i => `<div>${i.n} (${i.h})</div>`).join('');
-    document.getElementById('an-list').innerHTML = ANIONS.map(i => `<div>${i.n} (${i.h})</div>`).join('');
+    // Listen für Lehrer-Bereich befüllen
+    document.getElementById('cat-list').innerHTML = CATIONS.map(i => `<div><span>${i.n}</span> <span style="font-family:serif">${i.h}<sup>${i.ch}+</sup></span></div>`).join('');
+    document.getElementById('an-list').innerHTML = ANIONS.map(i => `<div><span>${i.n}</span> <span style="font-family:serif">${i.h}<sup>${Math.abs(i.ch)}-</sup></span></div>`).join('');
 
     refreshTaskDeck();
     generateTask();
 </script>
-
 </body>
 </html>

@@ -124,4 +124,141 @@
         { f:"Zn", h:"Zn", ch:2, n:"Zink-Ion", e:1, s1:0 }, { f:"Pb", h:"Pb", ch:2, n:"Blei(II)-Ion", r:"II", e:1, s1:0 },
         { f:"Al", h:"Al", ch:3, n:"Aluminium-Ion", e:1, s1:1 }, { f:"Fe", h:"Fe", ch:3, n:"Eisen(III)-Ion", r:"III", e:1, s1:1 },
         { f:"Cr", h:"Cr", ch:3, n:"Chrom(III)-Ion", r:"III", e:1, s1:0 }, { f:"Pb", h:"Pb", ch:4, n:"Blei(IV)-Ion", r:"IV", e:1, s1:0 },
-        { f:"Sn", h:"Sn", ch:4, n:"Zinn(IV)-Ion", r:"IV", e:1, s1:0 }, { f:"U", h:"U"
+        { f:"Sn", h:"Sn", ch:4, n:"Zinn(IV)-Ion", r:"IV", e:1, s1:0 }, { f:"U", h:"U", ch:6, n:"Uran(VI)-Ion", r:"VI", e:1, s1:0 }
+    ];
+
+    const ANIONS = [
+        { f:"F", h:"F", ch:1, n:"Fluorid-Ion", e:1, s1:1 }, { f:"Cl", h:"Cl", ch:1, n:"Chlorid-Ion", e:1, s1:1 }, { f:"Br", h:"Br", ch:1, n:"Bromid-Ion", e:1, s1:1 },
+        { f:"I", h:"I", ch:1, n:"Iodid-Ion", e:1, s1:1 }, { f:"OH", h:"OH", ch:1, n:"Hydroxid-Ion", poly:1, e:1, s1:1 },
+        { f:"NO3", h:"NO<sub>3</sub>", ch:1, n:"Nitrat-Ion", poly:1, e:1, s1:1 }, { f:"O", h:"O", ch:2, n:"Oxid-Ion", e:1, s1:1 },
+        { f:"S", h:"S", ch:2, n:"Sulfid-Ion", e:1, s1:1 }, { f:"SO4", h:"SO<sub>4</sub>", ch:2, n:"Sulfat-Ion", poly:1, e:1, s1:1 },
+        { f:"CO3", h:"CO<sub>3</sub>", ch:2, n:"Carbonat-Ion", poly:1, e:1, s1:1 }, { f:"PO4", h:"PO<sub>4</sub>", ch:3, n:"Phosphat-Ion", poly:1, e:1, s1:0 },
+        { f:"Cr2O7", h:"Cr<sub>2</sub>O<sub>7</sub>", ch:2, n:"Dichromat-Ion", poly:1, e:1, s1:0 }
+    ];
+
+    let current = null, score = 0, total = 0, deck = [];
+
+    const getGCD = (a, b) => b ? getGCD(b, a % b) : a;
+
+    function formatCh(val, sign) { return (val === 1 ? "" : val) + sign; }
+
+    function buildFormula(ion, count) {
+        if (!ion) return "";
+        let base = ion.h;
+        if (ion.poly && count > 1) base = "(" + base + ")";
+        return base + (count > 1 ? `<sub>${count}</sub>` : "");
+    }
+
+    function updateLive() {
+        const cI = parseInt(document.getElementById('idx-c')?.value) || 1;
+        const aI = parseInt(document.getElementById('idx-a')?.value) || 1;
+        document.getElementById('live-formula').innerHTML = buildFormula(current.cat, cI) + buildFormula(current.an, aI);
+    }
+
+    function refillDeck() {
+        deck = [];
+        const level = document.getElementById('level-select').value;
+        const cPool = CATIONS.filter(x => x.e && (level === 's2' || x.s1));
+        const aPool = ANIONS.filter(x => x.e && (level === 's2' || x.s1));
+        
+        for (let c of cPool) { for (let a of aPool) { deck.push({ cat: c, an: a }); } }
+        // Shuffle
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+    }
+
+    function generate() {
+        if (deck.length === 0) refillDeck();
+        if (deck.length === 0) { alert("Keine Ionen verfügbar!"); return; }
+
+        current = deck.pop();
+        const common = getGCD(current.cat.ch, current.an.ch);
+        current.reqC = current.an.ch / common;
+        current.reqA = current.cat.ch / common;
+
+        document.getElementById('deck-info').innerText = deck.length;
+        document.getElementById('solution-box').style.display = 'none';
+        document.getElementById('feedback').innerText = '';
+        document.getElementById('feedback').style.background = 'none';
+        document.getElementById('name-input').value = '';
+        document.getElementById('task-text').innerHTML = `Verbindung aus: <b>${current.cat.n}</b> und <b>${current.an.n}</b>`;
+        
+        document.getElementById('formula-area').innerHTML = `
+            <div class="ion-unit">
+                <div class="ion-symbol-row">${current.cat.h}<sup>${formatCh(current.cat.ch, '+')}</sup></div>
+                <input type="number" id="idx-c" class="index-input" value="1" min="1" oninput="updateLive()">
+            </div>
+            <div class="ion-unit">
+                <div class="ion-symbol-row">${current.an.h}<sup>${formatCh(current.an.ch, '-')}</sup></div>
+                <input type="number" id="idx-a" class="index-input" value="1" min="1" oninput="updateLive()">
+            </div>
+        `;
+        updateLive();
+    }
+
+    function resetAndGenerate() { deck = []; generate(); }
+
+    function check() {
+        if (!current) return;
+        const uC = parseInt(document.getElementById('idx-c').value);
+        const uA = parseInt(document.getElementById('idx-a').value);
+        const uN = document.getElementById('name-input').value.trim().toLowerCase().replace(/-/g, '');
+
+        const formulaOk = (uC === current.reqC && uA === current.reqA);
+        
+        let stemC = current.cat.n.replace('-Ion', '');
+        let stemA = current.an.n.replace('-Ion', '').toLowerCase();
+        let correctName = current.cat.r ? `${stemC}-${stemA}` : `${stemC}${stemA}`;
+        if (stemA === "hydroxid" || stemA === "oxid") correctName = `${stemC}${stemA}`;
+
+        const nameOk = uN === correctName.toLowerCase().replace(/-/g, '');
+
+        total++;
+        if (formulaOk && nameOk) {
+            score++;
+            document.getElementById('feedback').innerText = "Richtig! ✨";
+            document.getElementById('feedback').style.background = "var(--success)";
+            document.getElementById('feedback').style.color = "white";
+        } else {
+            document.getElementById('feedback').innerText = "Leider falsch.";
+            document.getElementById('feedback').style.background = "var(--error)";
+            document.getElementById('feedback').style.color = "white";
+        }
+
+        document.getElementById('sol-formula').innerHTML = buildFormula(current.cat, current.reqC) + buildFormula(current.an, current.reqA);
+        document.getElementById('sol-name').innerText = correctName;
+        document.getElementById('solution-box').style.display = 'block';
+        document.getElementById('score').innerText = score;
+        document.getElementById('total').innerText = total;
+    }
+
+    function initLists() {
+        const cBox = document.getElementById('cat-list');
+        const aBox = document.getElementById('an-list');
+        CATIONS.forEach((x, i) => {
+            const d = document.createElement('div'); d.className = 'ion-item';
+            d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="CATIONS[${i}].e = this.checked?1:0; deck=[]"> 
+                           <input type="checkbox" ${x.s1?'checked':''} onchange="CATIONS[${i}].s1 = this.checked?1:0; deck=[]"> 
+                           <span>${x.n}</span>`;
+            cBox.appendChild(d);
+        });
+        ANIONS.forEach((x, i) => {
+            const d = document.createElement('div'); d.className = 'ion-item';
+            d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="ANIONS[${i}].e = this.checked?1:0; deck=[]"> 
+                           <input type="checkbox" ${x.s1?'checked':''} onchange="ANIONS[${i}].s1 = this.checked?1:0; deck=[]"> 
+                           <span>${x.n}</span>`;
+            aBox.appendChild(d);
+        });
+    }
+
+    document.getElementById('next-btn').onclick = generate;
+    document.getElementById('check-btn').onclick = check;
+    document.getElementById('name-input').onkeypress = (e) => { if (e.key === 'Enter') check(); };
+
+    initLists();
+    generate();
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Salz-Formeltrainer Master Pro v15.0</title>
+    <title>Salz-Formeltrainer Master Pro v16</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -23,42 +23,45 @@
 
         .task-area { background: white; border: 2px solid var(--primary); padding: 20px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
         
-        /* --- CHEMIE-NOTATION STABIL --- */
-        .formula-preview { font-family: "Times New Roman", serif; font-size: 2.8rem; margin: 10px 0; min-height: 3.5rem; color: var(--primary-dark); }
-        .formula-builder { display: flex; justify-content: center; align-items: flex-end; gap: 50px; margin: 20px 0; }
+        /* --- PERFEKTE CHEMIE-NOTATION --- */
+        .formula-preview { font-family: "Times New Roman", serif; font-size: 3rem; margin: 15px 0; min-height: 4rem; color: var(--primary-dark); }
         
-        .ion-display-unit { display: inline-flex; flex-direction: column; align-items: center; }
+        .formula-builder { display: flex; justify-content: center; align-items: center; gap: 60px; margin: 30px 0; }
+        .ion-unit { display: flex; flex-direction: column; align-items: center; }
         
         .ion-symbol-box { 
-            position: relative; 
-            display: inline-block; 
+            display: inline-flex; 
+            align-items: baseline; 
             font-family: "Times New Roman", serif; 
-            font-size: 3rem; 
+            font-size: 3.2rem; 
             line-height: 1;
+            position: relative;
         }
 
-        /* Ladung: Absolut positioniert, damit sie die Indizes (sub) nicht stört */
+        /* Ladung: Exakt an die Oberkante verschoben */
         .charge-sup { 
-            position: absolute;
-            top: -0.1em;
-            left: 100%;
             font-size: 0.45em; 
-            color: var(--text-muted); 
             font-family: sans-serif;
-            white-space: nowrap;
+            font-weight: normal;
+            color: var(--text-muted);
+            margin-left: 2px;
+            display: inline-block;
+            transform: translateY(-0.8em); /* Zwingt Ladung nach oben */
         }
 
-        /* Indizes (sub): Fest am Boden verankert */
+        /* Indizes (z.B. SO4): Bleiben tief an der Grundlinie */
         sub { 
-            font-size: 0.5em; 
-            vertical-align: sub; 
+            font-size: 0.55em; 
+            vertical-align: baseline; 
+            position: relative;
+            bottom: -0.2em;
             line-height: 0; 
         }
 
         .index-input { 
-            width: 55px; padding: 6px; font-size: 1.2rem; text-align: center; 
+            width: 60px; padding: 6px; font-size: 1.3rem; text-align: center; 
             border: 2px solid var(--primary); border-radius: 6px; 
-            margin-top: 10px;
+            margin-top: 15px; background: #fff;
         }
 
         #name-input { width: 100%; max-width: 550px; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.2rem; text-align: center; outline: none; }
@@ -68,14 +71,14 @@
         #check-btn { background: var(--primary); color: white; }
         #next-btn { background: white; color: var(--primary); border: 2px solid var(--primary); }
 
-        .feedback { min-height: 40px; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; text-align: center; }
-        .solution-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; display: none; text-align: center; }
+        .feedback { min-height: 45px; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; text-align: center; }
+        .solution-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; display: none; text-align: center; line-height: 1.8; }
         
         .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
         .ion-list { height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; font-size: 0.8rem; background: #fafafa; }
         .ion-item { display: grid; grid-template-columns: 30px 30px 1fr; align-items: center; gap: 5px; border-bottom: 1px solid #eee; padding: 2px 0; }
 
-        .imprint { font-size: 0.65rem; color: #94a3b8; text-align: right; margin-top: auto; padding-top: 20px; }
+        .imprint { font-size: 0.65rem; color: #94a3b8; text-align: right; margin-top: auto; padding-top: 20px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -93,8 +96,8 @@
         <div class="control-group">
             <label>Niveau</label>
             <select id="level-select" onchange="generateTask()">
-                <option value="s1">Sek I (Anfänger)</option>
-                <option value="s2" selected>Sek II (Fortgeschritten)</option>
+                <option value="s1">Sek I (Auswahl)</option>
+                <option value="s2" selected>Sek II (Alle Ionen)</option>
             </select>
         </div>
         <div class="control-group">
@@ -116,8 +119,8 @@
     <div id="feedback" class="feedback"></div>
 
     <div id="solution-box" class="solution-box">
-        <strong>Korrekte Lösung:</strong><br>
-        Formel: <span id="sol-formula" style="font-family:serif; font-size:1.6rem;"></span><br>
+        <strong>Fachlich korrekte Lösung:</strong><br>
+        Formel: <span id="sol-formula" style="font-family:serif; font-size:1.8rem;"></span><br>
         Name: <span id="sol-name" style="font-weight: bold;"></span>
     </div>
 
@@ -127,7 +130,7 @@
     </div>
 
     <details style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;">
-        <summary style="cursor:pointer; font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Lehrer-Bereich: Ionen-Pools (Aktiv | S1)</summary>
+        <summary style="cursor:pointer; font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Lehrer-Bereich: Ionen-Konfiguration (An | S1)</summary>
         <div class="admin-grid">
             <div><label>Kationen</label><div id="cat-list" class="ion-list"></div></div>
             <div><label>Anionen</label><div id="an-list" class="ion-list"></div></div>
@@ -154,7 +157,7 @@
         { f:"OH", h:"OH", ch:1, n:"Hydroxid-Ion", poly:1, e:1, s1:1 }, { f:"NO3", h:"NO<sub>3</sub>", ch:1, n:"Nitrat-Ion", poly:1, e:1, s1:1 },
         { f:"O", h:"O", ch:2, n:"Oxid-Ion", e:1, s1:1 }, { f:"S", h:"S", ch:2, n:"Sulfid-Ion", e:1, s1:1 },
         { f:"SO4", h:"SO<sub>4</sub>", ch:2, n:"Sulfat-Ion", poly:1, e:1, s1:1 }, { f:"CO3", h:"CO<sub>3</sub>", ch:2, n:"Carbonat-Ion", poly:1, e:1, s1:1 },
-        { f:"PO4", h:"PO<sub>4</sub>", ch:3, n:"Phosphat-Ion", poly:1, e:1, s1:0 }
+        { f:"PO4", h:"PO<sub>4</sub>", ch:3, n:"Phosphat-Ion", poly:1, e:1, s1:0 }, { f:"Cr2O7", h:"Cr<sub>2</sub>O<sub>7</sub>", ch:2, n:"Dichromat-Ion", poly:1, e:1, s1:0 }
     ];
 
     let current = null, score = 0, total = 0;
@@ -193,11 +196,11 @@
         document.getElementById('task-text').innerHTML = `Verbindung aus: <b>${cat.n}</b> und <b>${an.n}</b>`;
         
         document.getElementById('formula-area').innerHTML = `
-            <div class="ion-display-unit">
+            <div class="ion-unit">
                 <div class="ion-symbol-box">${cat.h}<span class="charge-sup">${formatCh(cat.ch, '+')}</span></div>
                 <input type="number" id="idx-c" class="index-input" value="1" min="1" oninput="updateLive()">
             </div>
-            <div class="ion-display-unit">
+            <div class="ion-unit">
                 <div class="ion-symbol-box">${an.h}<span class="charge-sup">${formatCh(an.ch, '-')}</span></div>
                 <input type="number" id="idx-a" class="index-input" value="1" min="1" oninput="updateLive()">
             </div>
@@ -239,7 +242,8 @@
     }
 
     function initLists() {
-        const cBox = document.getElementById('cat-list'), aBox = document.getElementById('an-list');
+        const cBox = document.getElementById('cat-list');
+        const aBox = document.getElementById('an-list');
         CATIONS.forEach((x, i) => {
             const d = document.createElement('div'); d.className = 'ion-item';
             d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="CATIONS[i].e = this.checked?1:0"> 

@@ -161,4 +161,111 @@
     ];
 
     let current = null, score = 0, total = 0;
-    co
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+
+    function formatCh(val, sign) { return (val === 1 ? "" : val) + sign; }
+
+    function buildFormula(ion, count) {
+        if (!ion) return "";
+        let base = ion.h;
+        if (ion.poly && count > 1) base = "(" + base + ")";
+        return base + (count > 1 ? `<sub>${count}</sub>` : "");
+    }
+
+    function updateLive() {
+        const cI = parseInt(document.getElementById('idx-c')?.value) || 1;
+        const aI = parseInt(document.getElementById('idx-a')?.value) || 1;
+        document.getElementById('live-preview').innerHTML = buildFormula(current.cat, cI) + buildFormula(current.an, aI);
+    }
+
+    function generateTask() {
+        const level = document.getElementById('level-select').value;
+        const cPool = CATIONS.filter(x => x.e && (level === 's2' || x.s1));
+        const aPool = ANIONS.filter(x => x.e && (level === 's2' || x.s1));
+        
+        const cat = cPool[Math.floor(Math.random() * cPool.length)];
+        const an = aPool[Math.floor(Math.random() * aPool.length)];
+        const common = gcd(cat.ch, an.ch);
+        
+        current = { cat, an, reqC: an.ch / common, reqA: cat.ch / common };
+
+        document.getElementById('solution-box').style.display = 'none';
+        document.getElementById('feedback').innerText = '';
+        document.getElementById('feedback').style.background = 'none';
+        document.getElementById('name-input').value = '';
+        document.getElementById('task-text').innerHTML = `Verbindung aus: <b>${cat.n}</b> und <b>${an.n}</b>`;
+        
+        document.getElementById('formula-area').innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <div class="ion-group">${cat.h}<span class="charge-sup">${formatCh(cat.ch, '+')}</span></div>
+                <input type="number" id="idx-c" class="index-sub-input" value="1" min="1" oninput="updateLive()">
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <div class="ion-group">${an.h}<span class="charge-sup">${formatCh(an.ch, '-')}</span></div>
+                <input type="number" id="idx-a" class="index-sub-input" value="1" min="1" oninput="updateLive()">
+            </div>
+        `;
+        updateLive();
+    }
+
+    function check() {
+        if (!current) return;
+        const uC = parseInt(document.getElementById('idx-c').value);
+        const uA = parseInt(document.getElementById('idx-a').value);
+        const uN = document.getElementById('name-input').value.trim().toLowerCase().replace(/-/g, '');
+
+        let stemC = current.cat.n.replace('-Ion', '');
+        let stemA = current.an.n.replace('-Ion', '').toLowerCase();
+        let correctName = current.cat.r ? `${stemC}-${stemA}` : `${stemC}${stemA}`;
+        if (stemA === "hydroxid" || stemA === "oxid") correctName = `${stemC}${stemA}`;
+
+        const nameOk = uN === correctName.toLowerCase().replace(/-/g, '');
+        const formulaOk = (uC === current.reqC && uA === current.reqA);
+
+        total++;
+        if (formulaOk && nameOk) {
+            score++; showFB("Richtig! ✨", "var(--success)");
+        } else {
+            showFB("Leider falsch.", "var(--error)");
+        }
+
+        document.getElementById('sol-formula').innerHTML = buildFormula(current.cat, current.reqC) + buildFormula(current.an, current.reqA);
+        document.getElementById('sol-name').innerText = correctName;
+        document.getElementById('solution-box').style.display = 'block';
+        document.getElementById('score').innerText = score;
+        document.getElementById('total').innerText = total;
+    }
+
+    function showFB(t, c) { 
+        const f = document.getElementById('feedback');
+        f.innerText = t; f.style.background = c; f.style.color = "white"; 
+    }
+
+    function initLists() {
+        const cBox = document.getElementById('cat-list');
+        const aBox = document.getElementById('an-list');
+        CATIONS.forEach((x, i) => {
+            const d = document.createElement('div'); d.className = 'ion-item';
+            d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="CATIONS[${i}].e = this.checked?1:0"> 
+                           <input type="checkbox" ${x.s1?'checked':''} onchange="CATIONS[${i}].s1 = this.checked?1:0"> 
+                           <span>${x.n}</span>`;
+            cBox.appendChild(d);
+        });
+        ANIONS.forEach((x, i) => {
+            const d = document.createElement('div'); d.className = 'ion-item';
+            d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="ANIONS[${i}].e = this.checked?1:0"> 
+                           <input type="checkbox" ${x.s1?'checked':''} onchange="ANIONS[${i}].s1 = this.checked?1:0"> 
+                           <span>${x.n}</span>`;
+            aBox.appendChild(d);
+        });
+    }
+
+    document.getElementById('next-btn').onclick = generateTask;
+    document.getElementById('check-btn').onclick = check;
+    document.getElementById('name-input').onkeypress = (e) => { if (e.key === 'Enter') check(); };
+
+    initLists();
+    generateTask();
+</script>
+</body>
+</html>

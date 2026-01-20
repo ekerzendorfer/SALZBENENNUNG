@@ -2,13 +2,14 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Salz-Formeltrainer Master Pro v15</title>
+    <title>Salz-Formeltrainer Master Pro v15.0</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #2563eb; --primary-dark: #1e40af; --success: #16a34a; --error: #dc2626;
             --bg-site: #f8fafc; --bg-card: #ffffff; --border: #e2e8f0; --text-main: #1e293b; --text-muted: #64748b;
         }
-        * { box-sizing: border-box; transition: all 0.1s ease; }
+        * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-site); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; }
         .app-container { max-width: 950px; width: 100%; background: var(--bg-card); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border); padding: 24px; position: relative; display: flex; flex-direction: column; }
 
@@ -22,60 +23,56 @@
 
         .task-area { background: white; border: 2px solid var(--primary); padding: 20px; border-radius: 8px; margin-bottom: 15px; text-align: center; }
         
-        /* --- PRÄZISE CHEMIE-NOTATION --- */
+        /* --- CHEMIE-NOTATION STABIL --- */
         .formula-preview { font-family: "Times New Roman", serif; font-size: 2.8rem; margin: 10px 0; min-height: 3.5rem; color: var(--primary-dark); }
+        .formula-builder { display: flex; justify-content: center; align-items: flex-end; gap: 50px; margin: 20px 0; }
         
-        .formula-builder { display: flex; justify-content: center; align-items: flex-end; gap: 40px; margin: 20px 0; }
+        .ion-display-unit { display: inline-flex; flex-direction: column; align-items: center; }
         
-        .ion-group { 
-            display: inline-flex; 
-            align-items: baseline; 
+        .ion-symbol-box { 
+            position: relative; 
+            display: inline-block; 
             font-family: "Times New Roman", serif; 
             font-size: 3rem; 
             line-height: 1;
-            position: relative;
-        }
-        
-        /* Ladung: Nur diese wird hochgestellt */
-        .charge-sup { 
-            font-size: 0.45em; 
-            vertical-align: top;
-            position: relative;
-            top: -0.6em; /* Deutlich nach oben */
-            margin-left: 2px;
-            color: var(--text-muted); 
-            font-family: sans-serif;
-            font-weight: normal;
         }
 
-        /* Indizes (z.B. die 4 in SO4): Bleiben tief */
+        /* Ladung: Absolut positioniert, damit sie die Indizes (sub) nicht stört */
+        .charge-sup { 
+            position: absolute;
+            top: -0.1em;
+            left: 100%;
+            font-size: 0.45em; 
+            color: var(--text-muted); 
+            font-family: sans-serif;
+            white-space: nowrap;
+        }
+
+        /* Indizes (sub): Fest am Boden verankert */
         sub { 
             font-size: 0.5em; 
             vertical-align: sub; 
             line-height: 0; 
         }
 
-        .index-sub-input { 
-            width: 55px; padding: 4px; font-size: 1.2rem; text-align: center; 
+        .index-input { 
+            width: 55px; padding: 6px; font-size: 1.2rem; text-align: center; 
             border: 2px solid var(--primary); border-radius: 6px; 
-            margin-bottom: 5px;
+            margin-top: 10px;
         }
 
-        .naming-area { margin: 10px 0; text-align: center; }
-        #name-input { width: 100%; max-width: 500px; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.2rem; text-align: center; outline: none; }
+        #name-input { width: 100%; max-width: 550px; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 1.2rem; text-align: center; outline: none; }
 
         .action-bar { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; background: #f1f5f9; padding: 15px; border-radius: 8px; }
         button { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 800; }
         #check-btn { background: var(--primary); color: white; }
         #next-btn { background: white; color: var(--primary); border: 2px solid var(--primary); }
 
-        .feedback { min-height: 40px; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: bold; text-align: center; }
-        .solution-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
-        .inline-formula { font-family: "Times New Roman", serif; font-size: 1.4rem; padding: 0 5px; }
-
-        /* Lehrer-Bereich */
+        .feedback { min-height: 40px; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; text-align: center; }
+        .solution-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; display: none; text-align: center; }
+        
         .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .ion-list { height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; font-size: 0.8rem; background: #fafafa; }
+        .ion-list { height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; font-size: 0.8rem; background: #fafafa; }
         .ion-item { display: grid; grid-template-columns: 30px 30px 1fr; align-items: center; gap: 5px; border-bottom: 1px solid #eee; padding: 2px 0; }
 
         .imprint { font-size: 0.65rem; color: #94a3b8; text-align: right; margin-top: auto; padding-top: 20px; }
@@ -96,21 +93,21 @@
         <div class="control-group">
             <label>Niveau</label>
             <select id="level-select" onchange="generateTask()">
-                <option value="s1">Sek I (Auswahl)</option>
-                <option value="s2" selected>Sek II (Alle Ionen)</option>
+                <option value="s1">Sek I (Anfänger)</option>
+                <option value="s2" selected>Sek II (Fortgeschritten)</option>
             </select>
         </div>
         <div class="control-group">
             <label>Nomenklatur</label>
             <select id="dash-select">
-                <option value="optional">Bindestrich optional</option>
+                <option value="opt">Bindestrich optional</option>
                 <option value="strict">Bindestrich streng</option>
             </select>
         </div>
     </div>
 
     <div class="task-area">
-        <div id="task-text" style="color:var(--text-muted); font-size:0.9rem; margin-bottom:10px;">Warte...</div>
+        <div id="task-text" style="color:var(--text-muted); font-size:0.9rem; margin-bottom:10px;">Lade Aufgabe...</div>
         <div id="live-preview" class="formula-preview"></div>
         <div class="formula-builder" id="formula-area"></div>
         <input type="text" id="name-input" placeholder="Name des Salzes eingeben..." autocomplete="off">
@@ -119,9 +116,9 @@
     <div id="feedback" class="feedback"></div>
 
     <div id="solution-box" class="solution-box">
-        <strong>Lösung:</strong><br>
-        Formel: <span id="sol-formula" class="inline-formula"></span><br>
-        Name: <span id="sol-name" class="inline-formula" style="font-family: sans-serif; font-weight: bold;"></span>
+        <strong>Korrekte Lösung:</strong><br>
+        Formel: <span id="sol-formula" style="font-family:serif; font-size:1.6rem;"></span><br>
+        Name: <span id="sol-name" style="font-weight: bold;"></span>
     </div>
 
     <div class="action-bar">
@@ -130,14 +127,14 @@
     </div>
 
     <details style="margin-top:20px; border-top:1px dashed #ccc; padding-top:10px;">
-        <summary style="cursor:pointer; font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Lehrer-Bereich: Ionen-Pools (An | S1)</summary>
+        <summary style="cursor:pointer; font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Lehrer-Bereich: Ionen-Pools (Aktiv | S1)</summary>
         <div class="admin-grid">
             <div><label>Kationen</label><div id="cat-list" class="ion-list"></div></div>
             <div><label>Anionen</label><div id="an-list" class="ion-list"></div></div>
         </div>
     </details>
 
-    <div class="imprint">Erstellt von Mag. Erich Kerzendorfer mit Gemini 2.0 Flash</div>
+    <div class="imprint">Erstellt von Mag. Erich Kerzendorfer mit Gemini 3 Flash</div>
 </div>
 
 <script>
@@ -196,13 +193,13 @@
         document.getElementById('task-text').innerHTML = `Verbindung aus: <b>${cat.n}</b> und <b>${an.n}</b>`;
         
         document.getElementById('formula-area').innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:center;">
-                <div class="ion-group">${cat.h}<span class="charge-sup">${formatCh(cat.ch, '+')}</span></div>
-                <input type="number" id="idx-c" class="index-sub-input" value="1" min="1" oninput="updateLive()">
+            <div class="ion-display-unit">
+                <div class="ion-symbol-box">${cat.h}<span class="charge-sup">${formatCh(cat.ch, '+')}</span></div>
+                <input type="number" id="idx-c" class="index-input" value="1" min="1" oninput="updateLive()">
             </div>
-            <div style="display:flex; flex-direction:column; align-items:center;">
-                <div class="ion-group">${an.h}<span class="charge-sup">${formatCh(an.ch, '-')}</span></div>
-                <input type="number" id="idx-a" class="index-sub-input" value="1" min="1" oninput="updateLive()">
+            <div class="ion-display-unit">
+                <div class="ion-symbol-box">${an.h}<span class="charge-sup">${formatCh(an.ch, '-')}</span></div>
+                <input type="number" id="idx-a" class="index-input" value="1" min="1" oninput="updateLive()">
             </div>
         `;
         updateLive();
@@ -242,19 +239,18 @@
     }
 
     function initLists() {
-        const cBox = document.getElementById('cat-list');
-        const aBox = document.getElementById('an-list');
+        const cBox = document.getElementById('cat-list'), aBox = document.getElementById('an-list');
         CATIONS.forEach((x, i) => {
             const d = document.createElement('div'); d.className = 'ion-item';
-            d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="CATIONS[${i}].e = this.checked?1:0"> 
-                           <input type="checkbox" ${x.s1?'checked':''} onchange="CATIONS[${i}].s1 = this.checked?1:0"> 
+            d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="CATIONS[i].e = this.checked?1:0"> 
+                           <input type="checkbox" ${x.s1?'checked':''} onchange="CATIONS[i].s1 = this.checked?1:0"> 
                            <span>${x.n}</span>`;
             cBox.appendChild(d);
         });
         ANIONS.forEach((x, i) => {
             const d = document.createElement('div'); d.className = 'ion-item';
-            d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="ANIONS[${i}].e = this.checked?1:0"> 
-                           <input type="checkbox" ${x.s1?'checked':''} onchange="ANIONS[${i}].s1 = this.checked?1:0"> 
+            d.innerHTML = `<input type="checkbox" ${x.e?'checked':''} onchange="ANIONS[i].e = this.checked?1:0"> 
+                           <input type="checkbox" ${x.s1?'checked':''} onchange="ANIONS[i].s1 = this.checked?1:0"> 
                            <span>${x.n}</span>`;
             aBox.appendChild(d);
         });
